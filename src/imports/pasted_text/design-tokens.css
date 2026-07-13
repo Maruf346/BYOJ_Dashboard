@@ -1,0 +1,677 @@
+🎨 DESIGN SYSTEM (Reference for ALL screens)
+
+Brand: BYOJ — Custom Jewelry Business Admin Dashboard
+
+Color Tokens:
+
+
+--bg-base: #0D0D0D (main background)
+--bg-surface: #161616 (sidebar background)
+--bg-card: #1E1E1E (card/panel background)
+--bg-card-hover: #252525
+--bg-input: #1A1A1A (input field background)
+--accent-gold: #D4A84B (primary gold/amber — buttons, active nav, highlights)
+--accent-gold-hover: #C49A3A
+--accent-gold-muted: rgba(212, 168, 75, 0.15) (subtle gold fill)
+--text-primary: #FFFFFF
+--text-secondary: #888888
+--text-muted: #555555
+--border: #2A2A2A
+--border-active: #D4A84B
+--status-pending: #D4A84B (amber/gold)
+--status-inprogress: #6C63FF (purple)
+--status-processing: #3B82F6 (blue)
+--status-completed: #22C55E (green)
+--status-shipped: #F97316 (orange)
+--status-ready: #F97316 (orange)
+--status-delivered: #22C55E (green)
+--status-intransit: #3B82F6 (blue)
+
+
+Typography:
+
+
+Font Family: Inter (all weights)
+Page Title: 28px / Bold / #FFFFFF
+Section Title: 18px / SemiBold / #FFFFFF
+Card Label: 13px / Regular / #888888
+Card Value: 28px / Bold / #FFFFFF
+Table Header: 11px / SemiBold / #888888 / Letter-spacing: 0.08em / Uppercase
+Table Cell: 14px / Regular / #FFFFFF
+Body Text: 14px / Regular / #CCCCCC
+Small/Caption: 12px / Regular / #888888
+Button Text: 14px / SemiBold
+
+
+Global Component Styles:
+
+
+All cards: background --bg-card, border-radius 12px, border 1px solid --border
+Input fields: background --bg-input, border-radius 8px, border 1px solid --border, padding 12px 16px, color white
+Primary Button: background --accent-gold, border-radius 8px, padding 10px 20px, text Bold 14px black
+Secondary Button: background transparent, border 1px solid --border, border-radius 8px, text white
+Status Badge: border-radius 20px, padding 4px 12px, font 12px SemiBold
+Popup/Modal: background --bg-card #1E1E1E, border-radius 16px, border 1px solid --border, box-shadow 0 20px 60px rgba(0,0,0,0.6)
+Sidebar width: 240px
+Top navbar height: 56px
+Sidebar active item: background --accent-gold, border-radius 8px, text black/bold
+
+
+
+📐 LAYOUT STRUCTURE (All Screens)
+
+Sidebar (Left — 240px fixed):
+
+
+Top: BYOJ logo (gold "B" icon + "BYOJ" bold white text)
+Nav items (icon + label): Dashboard, Design Requests, Chats, Meeting Schedule, Materials, Orders, Shipping, Customers, Settings
+Bottom: Logout (icon + label)
+Active nav item: gold background --accent-gold, black text, bold
+
+
+Top Navbar (56px):
+
+
+Center: Search bar (rounded, dark background)
+Right: Bell notification icon + User profile icon
+
+
+
+📄 SCREEN 01 — DASHBOARD
+
+Page Title: "Welcome back" (28px Bold White)
+Subtitle: "Here's your business overview" (14px #888888)
+
+Stat Cards Row (3 cards, equal width):
+
+Each card: dark background, border-radius 12px, border
+
+
+Total Orders — Label top-left, Value "124" bold large, 📦 emoji top-right
+Design Requests — Label top-left, Value "23", ✏️ emoji top-right
+Active Customers — Label top-left, Value "18", 👥 emoji top-right
+
+
+Middle Row (Two Columns):
+
+Left — Revenue Trend Chart (card, ~65% width):
+
+
+Title: "Revenue Trend" bold white
+Area chart with gold fill/stroke (#D4A84B)
+Y-axis: 0, 10000, 20000, 30000, 40000
+X-axis: 0–5
+Legend: gold square + "revenue" label
+
+
+Right — Recent Activity (card, ~35% width):
+
+
+Title: "Recent Activity" bold white
+Activity items (4 rows):
+
+Each row: activity text (white) + timestamp (gray small) + gold dot on right
+Items: "New order received · 2 hours ago", "Design request from Emma Wilson · 4 hours ago", "Quote sent to John Smith · 1 day ago", "Material shipment received · 2 days ago"
+Divider line between each item
+
+
+
+
+
+NEW SECTION — Recent Orders (full width card below):
+
+Card Header:
+
+
+Left: "Recent Orders" (18px SemiBold White)
+Right: "View All" text link (14px gold, no underline)
+
+
+Table inside card:
+
+Columns: ORDER ID | CUSTOMER | ITEMS | STATUS | TOTAL | DATE | ACTION
+
+Table headers: 11px uppercase SemiBold #888888
+
+5 Sample Rows:
+
+
+ORD-001 | Sarah Johnson | Custom Ring + Setting | Processing (blue badge) | $3,500 | 2024-03-15 | 👁 eye icon (gold)
+ORD-002 | Michael Chen | Wedding Band Pair | In-production (purple badge) | $2,800 | 2024-03-14 | 👁 eye icon
+ORD-003 | Emma Wilson | Diamond Necklace | Completed (green badge) | $5,200 | 2024-03-13 | 👁 eye icon
+ORD-004 | James Brown | Bracelet + Earrings | Shipped (orange badge) | $2,100 | 2024-03-12 | 👁 eye icon
+ORD-005 | Lisa Anderson | Custom Pendant | Pending (amber badge) | $1,800 | 2024-03-11 | 👁 eye icon
+
+
+ORDER DETAIL POPUP (opens on 👁 eye click):
+
+Full-screen dark overlay (rgba 0,0,0,0.7) + centered popup card:
+
+Popup layout:
+
+
+Top row: "Order Details" (18px Bold White) left + ✕ close icon right
+Divider line
+Client Section:
+
+Avatar circle (initials, gold border) + Client name bold (16px) + subtitle "Customer"
+
+
+
+Item Requested:
+
+Label "Item" (small gray) + Value e.g. "Custom Ring" (white bold)
+
+
+
+Metal & Material:
+
+Two-column: "Metal Type" → "18K Yellow Gold" | "Stone" → "Diamond"
+
+
+
+Designer Fee:
+
+Label "Selected Plan" (small gray) + Badge-style box: "Starter Plan — $450" (gold border, gold text, dark bg)
+
+
+
+Status Change:
+
+Label "Update Status" (small gray)
+Row of 5 pill/button options: "Pending" | "In Progress" | "Processing" | "Completed" | "Shipped"
+Active/selected pill: gold background black text. Inactive: dark bg with gray border
+
+
+
+Bottom: "Save Changes" full-width gold button
+
+
+
+📄 SCREEN 02 — DESIGN REQUESTS
+
+Page Title: "Design Requests" + subtitle "Manage customer design requests"
+
+Filter Tabs Row:
+Tabs: All (active=gold bg, black text, rounded) | Pending | In Progress | Completed
+
+Request List (vertical cards):
+
+Each card: dark background, border-radius 12px, padding 20px, full width
+
+Card content:
+
+
+Left: Request title bold (e.g. "Custom Ring") + Customer name gray small below
+Center: 🕐 icon + time ago text (gray)
+Right: Status badge + "View" gold button
+
+
+4 Sample Requests:
+
+
+Custom Ring — Sarah Johnson — 2 hours ago — Pending (amber) — View
+Custom Necklace — Michael Chen — 1 day ago — In-progress (purple) — View
+Custom Ring — Emma Wilson — 3 days ago — Completed (green) — View
+Custom Necklace — James Brown — 5 hours ago — Pending (amber) — View
+
+
+DESIGN REQUEST DETAIL POPUP (opens on "View" click):
+
+Popup card (centered, dark overlay behind):
+
+
+Header: "Design Request Details" bold + ✕ close
+Divider
+Customer Info: Avatar + Name bold + "Customer" subtitle
+Request Type: Label "Item Type" → "Custom Ring"
+Description: Label "Description" → Multi-line text e.g. "Customer wants a custom solitaire engagement ring with a 1.5ct round diamond, white gold band, 6-prong setting."
+Reference Images: Label + 2–3 small image placeholder boxes with dashed gold border (showing "No image" state or placeholder thumbnail)
+Preferred Metal: "18K White Gold"
+Budget: "$3,500 – $5,000"
+Timeline: "3-4 weeks"
+Deadline: "2024-04-15"
+Status: Row of 5 status pills (same as order detail — Pending, In Progress, Processing, Completed, Shipped) with one active
+Bottom row (2 buttons side by side): "Start Chat" (secondary/outlined gold) + "Accept Request" (primary gold filled)
+
+
+
+📄 SCREEN 03 — CHATS (MESSAGES)
+
+Page Title: "Messages" + subtitle "Chat with your customers"
+
+Two-Column Layout:
+
+LEFT PANEL — Conversations List (~38% width):
+
+
+Panel title: "Conversations" (16px SemiBold White)
+Search field inside: 🔍 placeholder "Search..."
+Conversation list items (each):
+
+Active state: gold border left accent or gold-tinted background
+Avatar circle (initials) + Name bold + Unread count badge (gold circle, black number)
+Preview text (gray, truncated) + Time ago (gray small, right-aligned)
+
+
+
+4 Conversations:
+
+Sarah Johnson (3 unread) — "Can you add more diamonds t..." — 2 min ago — ACTIVE (gold highlight)
+Michael Chen — "Perfect! I love the design" — 1 hour ago
+Emma Wilson (1 unread) — "When can I expect delivery?" — 3 hours ago
+James Brown — "Thanks for the update" — 1 day ago
+
+
+
+
+
+RIGHT PANEL — Active Chat (Sarah Johnson):
+
+
+Chat Header: Avatar + "Sarah Johnson" bold + "Active now" green dot + gray small text
+Divider
+Message Thread:
+
+Incoming (left-aligned, dark card bubble, white text): "Hi! I wanted to ask about my ring design" — 10:30 AM gray
+Outgoing (right-aligned, GOLD background bubble, black text): "Of course! What would you like to change?" — 10:32 AM
+Incoming: "Can you add more diamonds to the ring?" — 10:35 AM
+Incoming: "Also make it a bit smaller" — 10:35 AM
+
+
+
+Message Input Bar (bottom, full width):
+
+Left: ➕ Plus icon button (gold or white, rounded, clickable)
+Center: Text input field placeholder "Type your message..."
+Right: ➤ Send icon button (gold background)
+
+
+
+
+
+PLUS BUTTON POPUP (2 options appear above the input, card-style):
+
+
+Small popup card with 2 rows:
+
+📎 "Attach File" — click to attach any file
+📐 "Upload CAD Design" — click to upload CAD/design file
+
+
+
+Each option: icon left + label text + arrow or chevron right
+
+
+
+📄 SCREEN 04 — MEETING SCHEDULE
+
+Page Title: "Meeting Schedule" + subtitle "All your upcoming client meetings"
+
+Top Action Area:
+
+
+Right: "+ Schedule Meeting" gold button
+
+
+Horizontal Card Grid (meeting cards in a responsive row, wrap to next row):
+
+Each meeting card (min-width 260px, flex-wrap):
+
+
+Card: dark bg, border-radius 12px, padding 20px, border --border
+Top-left: Date chip (e.g. "Mar 15" — gold text, dark gold-tinted background, rounded)
+Time: "10:00 AM – 11:00 AM" (white 14px)
+Client name: bold 15px white
+Meeting type: "Design Consultation" or "Order Review" — gray small
+Status dot: green (confirmed) or amber (pending)
+Bottom: small text "Click to view in inbox →" or just card is clickable
+
+
+4 Sample Cards:
+
+
+Mar 15 | 10:00 AM | Sarah Johnson | Design Consultation | Confirmed
+Mar 16 | 2:00 PM | Michael Chen | Order Review | Pending
+Mar 18 | 11:00 AM | Emma Wilson | Initial Consultation | Confirmed
+Mar 20 | 3:30 PM | James Brown | Final Approval | Confirmed
+
+
+Behavior note in prompt: "Each card is clickable and navigates the user to the Chats/Inbox screen, filtered to that client's conversation."
+
+
+📄 SCREEN 05 — MATERIALS
+
+Page Title: "Materials" + subtitle "Manage your metals and gemstones inventory"
+
+Two-Column Layout:
+
+LEFT COLUMN — Metals Management
+
+Section Header: "Metals" (16px SemiBold) + "+ Add Metal" gold outlined button (right)
+
+Metal Type List (each as a card row):
+Row layout: Metal name (bold white) | Carat input field | Delete/trash icon (red on hover)
+
+Add Metal Form (below list or inline):
+
+
+Input field: "Metal name" placeholder e.g. "Yellow Gold, White Gold, Rose Gold, Platinum"
+Input field: "Carat" (e.g. 14K, 18K, 22K, 24K)
+"+ Add" gold button
+
+
+Existing metals (dynamic list, deletable):
+
+
+Yellow Gold — 18K — 🗑 icon
+White Gold — 14K — 🗑 icon
+Rose Gold — 18K — 🗑 icon
+Platinum — 950 — 🗑 icon
+
+
+(Each row removable. Removed rows disappear from app in real-time.)
+
+RIGHT COLUMN — Diamonds / Gemstones Management
+
+Section 1 — Diamond Category:
+Header: "Diamond Categories" + "+ Add Category" gold outlined button
+
+Diamond Category List (each row):
+
+
+Diamond name + Delete icon
+Yellow Diamond — 🗑
+White Diamond — 🗑
+Pink Diamond — 🗑
+Blue Diamond — 🗑
+
+
+Add form: Input "Diamond Name" + "+ Add" button
+
+Section 2 — Clarity Grade:
+Header: "Clarity Grades" + "+ Add Grade" gold outlined button
+
+Clarity Grade Tags (pill/chips layout):
+
+
+Each grade as a pill: text + ✕ remove icon
+VVS1 ✕ | VVS2 ✕ | VS1 ✕ | VS2 ✕ | SI1 ✕ | SI2 ✕
+
+
+Add form: Input "Clarity Grade" (e.g. IF, FL) + "+ Add" button
+
+Note in prompt: "All lists are fully dynamic — adding a new item appends it to the list; clicking delete/✕ removes it. These changes reflect across the app wherever that material/stone is referenced."
+
+
+📄 SCREEN 06 — ORDERS
+
+Page Title: "Orders" (left) + "+ New Order" gold button (top right)
+
+4 Stat Cards Row:
+
+
+Total Orders → "245" (white)
+Pending → "12" (gold/amber)
+In Production → "8" (purple)
+Revenue → "$289K" (gold)
+
+
+Recent Orders Table (full-width card):
+
+Title: "Recent Orders" (18px SemiBold)
+
+Columns: ORDER ID | CUSTOMER | ITEMS | STATUS | TOTAL | DATE | ACTION
+
+Rows:
+
+
+ORD-001 (gold) | Sarah Johnson | Custom Ring + Setting | Processing (blue) | $3,500 | 2024-03-15 | 👁 eye
+ORD-002 (gold) | Michael Chen | Wedding Band Pair | In-production (purple) | $2,800 | 2024-03-14 | 👁 eye
+ORD-003 (gold) | Emma Wilson | Diamond Necklace | Completed (green) | $5,200 | 2024-03-13 | 👁 eye
+ORD-004 (gold) | James Brown | Bracelet + Earrings | Shipped (orange) | $2,100 | 2024-03-12 | 👁 eye
+ORD-005 (gold) | Lisa Anderson | Custom Pendant | Pending (amber) | $1,800 | 2024-03-11 | 👁 eye
+
+
+👁 Eye Icon Click → ORDER DETAIL POPUP (same as Dashboard popup above):
+
+
+Same popup: Client name, Item, Metal Type, Stone, Designer Plan ($450 Starter), Status change pills, Save Changes button
+
+
+
+📄 SCREEN 07 — SHIPPING
+
+Page Title: "Shipping" + subtitle "Track and manage your jewelry shipments worldwide."
+
+Top Right: "+ New Shipment" gold button
+
+4 Stat Cards Row:
+
+
+Total Shipments → "1,284" (white) + "+12% this month" green tag
+In-Transit → "42" (white) + "Currently on the road" gray subtitle
+Delivered Today → "18" (white) + "All items on schedule" green subtitle
+Pending Pickups → "7" (white) + "Ready for courier" gray subtitle
+
+
+Active Shipments Table (full-width card):
+
+Title: "Active Shipments" + "Export CSV" outlined button + "Filters" button (top right of card)
+
+Columns: SHIPMENT ID | ORDER | CUSTOMER | TRACKING | STATUS | EST. DELIVERY | ACTION
+
+Rows:
+
+
+SHIP-001 (gold) | ORD-001 | AJ avatar + Alice Johnson | TRK98231 | In-transit (blue) | Oct 24, 2023 | 👁 eye
+SHIP-002 (gold) | ORD-005 | BS + Bob Smith | TRK21904 | Delivered (green) | Oct 20, 2023 | 👁 eye
+SHIP-003 (gold) | ORD-012 | CB + Charlie Brown | TRK55120 | Ready (orange) | Oct 26, 2023 | 👁 eye
+SHIP-004 (gold) | ORD-015 | DP + Diana Prince | TRK88231 | In-transit (blue) | Oct 25, 2023 | 👁 eye
+SHIP-005 (gold) | ORD-022 | EW + Ethan Wright | TRK10042 | Ready (orange) | Oct 28, 2023 | 👁 eye
+
+
+Pagination: "Showing 5 of 42 active shipments" + page numbers
+
+👁 Eye Click → SHIPPING DETAIL POPUP:
+
+Popup card (centered, dark overlay):
+
+
+Header: "Shipment Details" bold + ✕ close
+Divider
+Shipment ID: "SHIP-001" (gold, large)
+Linked Order: "ORD-001" (gold link text)
+Customer: Avatar + "Alice Johnson"
+Tracking Number: "TRK98231" + 📋 copy icon (ghost button)
+Carrier / Courier: "FedEx International"
+Current Status: "In-Transit" badge (blue)
+Estimated Delivery: "Oct 24, 2023"
+Shipping Address: full address block (gray text, smaller)
+Tracking Timeline (vertical stepper):
+
+✅ Order Packed — Oct 20
+✅ Picked Up — Oct 21
+🔵 In Transit — Oct 22 (active/current)
+⬜ Out for Delivery — Oct 23 (upcoming)
+⬜ Delivered — Oct 24 (upcoming)
+
+
+
+Bottom: "Close" outlined button
+
+
+
+📄 SCREEN 08 — CUSTOMERS
+
+Page Title: "Customers" + subtitle "Manage and view all your customers"
+
+Top Right: Search bar (inline or in header) + optional "Export" ghost button
+
+Customer Table (full-width card):
+
+Columns: CUSTOMER | EMAIL | PHONE | TOTAL ORDERS | SPENT | JOINED | ACTION
+
+Rows (5–6 sample customers):
+
+
+SJ avatar + Sarah Johnson | sarah@email.com | +1 555-001 | 3 orders | $11,500 | Jan 2024 | 👁 eye
+MC + Michael Chen | michael@email.com | +1 555-002 | 2 orders | $7,800 | Feb 2024 | 👁 eye
+EW + Emma Wilson | emma@email.com | +1 555-003 | 5 orders | $18,200 | Dec 2023 | 👁 eye
+JB + James Brown | james@email.com | +1 555-004 | 1 order | $2,100 | Mar 2024 | 👁 eye
+LA + Lisa Anderson | lisa@email.com | +1 555-005 | 4 orders | $9,400 | Nov 2023 | 👁 eye
+
+
+Customer avatars: Colored circles with initials (same color palette as chats screen)
+
+👁 Eye → CUSTOMER DETAIL POPUP:
+
+
+Header: "Customer Profile" + ✕
+Large avatar circle (initials, gold border) + Name bold + "Customer since Jan 2024"
+Contact: Email | Phone
+Stats row: Total Orders | Total Spent | Avg. Order Value
+Recent Orders mini-list (3 rows): Order ID + Item + Status + Amount
+"Send Message" gold button (links to chat) | "View All Orders" outlined button
+
+
+
+📄 SCREEN 09 — SETTINGS
+
+Page Title: "Settings" + subtitle "Manage your account and preferences"
+
+Tabs Row (top): Profile | Security | FAQ | Privacy Policy | Terms & Conditions
+
+(Business Info and Notifications tabs are REMOVED)
+
+
+TAB 1 — Profile
+
+Card: Profile Information
+Subtitle: "Update your personal details"
+
+Fields (form layout):
+
+
+First Name (input) | Last Name (input) — side by side
+Email (full-width input)
+Phone (full-width input)
+
+
+Bottom: "Save Changes" gold button
+
+
+TAB 2 — Security
+
+Card: Change Password
+Subtitle: "Update your account password"
+
+Fields:
+
+
+Current Password (password input, show/hide toggle icon)
+New Password (password input, show/hide toggle)
+Confirm New Password (password input, show/hide toggle)
+
+
+Password strength indicator bar (4 segments: weak → strong, color changes green)
+
+Bottom: "Update Password" gold button
+
+
+TAB 3 — FAQ
+
+Card: Frequently Asked Questions
+
+Accordion/collapsible list of 5 FAQ items:
+Each item: Question text (bold white) + ▼ chevron (right-aligned)
+Expanded state: answer text below in gray
+Collapsed state: only question visible
+
+Sample questions:
+
+
+"How do I create a new design request?"
+"How do I track a shipment?"
+"How can I communicate with a client?"
+"What materials are available for jewelry?"
+"How do I update an order status?"
+
+
+
+TAB 4 — Privacy Policy
+
+Card: Privacy Policy
+Subtitle: "Last updated: March 2024"
+
+Long-form text content in scrollable card:
+Sections with headings (16px SemiBold white) + paragraph text (14px gray):
+
+
+Information We Collect
+How We Use Your Information
+Data Security
+Third-Party Services
+Contact Us
+
+
+
+TAB 5 — Terms & Conditions
+
+Card: Terms & Conditions
+Subtitle: "Effective date: January 2024"
+
+Same format as Privacy Policy:
+
+
+Acceptance of Terms
+Use of Platform
+Payments & Fees
+Intellectual Property
+Limitation of Liability
+Changes to Terms
+
+
+
+🔧 FIGMA MAKE INSTRUCTIONS
+
+Frame Setup:
+
+
+Create one frame per screen at 1280 × 960px
+Name frames: 01_Dashboard, 02_Design_Requests, 03_Chats, 04_Meeting_Schedule, 05_Materials, 06_Orders, 07_Shipping, 08_Customers, 09_Settings_Profile, 09_Settings_Security, 09_Settings_FAQ, 09_Settings_Privacy, 09_Settings_Terms
+Also create overlay frames for each popup at 1280 × 960px (dark overlay + centered modal): ORDER_DETAIL_POPUP, DESIGN_REQUEST_POPUP, SHIPPING_DETAIL_POPUP, CUSTOMER_DETAIL_POPUP, CHAT_PLUS_MENU_POPUP
+
+
+Component Consistency:
+
+
+Build the Sidebar as a reusable component and reuse across all screens (swap active state per screen)
+Build the Top Navbar as a reusable component
+Status badges as variants: Pending, In Progress, Processing, Completed, Shipped, In-Transit, Delivered, Ready
+Eye icon button: reusable — gold icon, circular hover state with gold-tinted background
+All popups: use same base modal component, swap content inside
+
+
+Spacing:
+
+
+Page content padding: 32px top, 32px left/right
+Card inner padding: 24px
+Gap between cards: 16px
+Table row height: 60px
+Table cell horizontal padding: 16px
+
+
+Reference Images:
+All 6 uploaded screen screenshots must be used as direct pixel-accurate visual references. The AI must match:
+
+
+Exact background colors from the screenshots
+Same gold accent tone for active nav, buttons, badges
+Same dark card style
+Same font weights and sizes
+Same sidebar structure
+
+
+The uploaded screenshots show: Dashboard, Design Requests, Chats/Messages, Orders, Shipping, Settings. Use them as the baseline and add all new sections/screens as described above while maintaining 100% visual consistency.
