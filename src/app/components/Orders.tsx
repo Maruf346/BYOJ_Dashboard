@@ -29,7 +29,7 @@ export function Orders() {
           <h1 style={{ color: '#FFFFFF', fontSize: '28px', fontWeight: '700' }}>Orders</h1>
           <p style={{ color: '#888888', fontSize: '14px' }}>View and manage all orders</p>
         </div>
-        <button
+        {/* <button
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -46,7 +46,7 @@ export function Orders() {
         >
           <Plus size={16} />
           New Order
-        </button>
+        </button> */}
       </div>
 
       {/* Stat cards */}
