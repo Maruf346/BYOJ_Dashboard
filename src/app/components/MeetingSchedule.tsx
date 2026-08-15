@@ -1,41 +1,9 @@
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import type { ActivePage } from './Sidebar';
+import { meetings } from '../mock/meetings';
 
-const meetings = [
-  {
-    id: '1',
-    date: 'Mar 15',
-    time: '10:00 AM – 11:00 AM',
-    client: 'Sarah Johnson',
-    type: 'Design Consultation',
-    confirmed: true,
-  },
-  {
-    id: '2',
-    date: 'Mar 16',
-    time: '2:00 PM – 3:00 PM',
-    client: 'Michael Chen',
-    type: 'Order Review',
-    confirmed: false,
-  },
-  {
-    id: '3',
-    date: 'Mar 18',
-    time: '11:00 AM – 12:00 PM',
-    client: 'Emma Wilson',
-    type: 'Initial Consultation',
-    confirmed: true,
-  },
-  {
-    id: '4',
-    date: 'Mar 20',
-    time: '3:30 PM – 4:30 PM',
-    client: 'James Brown',
-    type: 'Final Approval',
-    confirmed: true,
-  },
-];
+const meetingsPerPage = 8;
 
 interface MeetingScheduleProps {
   onNavigate: (page: ActivePage) => void;
@@ -59,6 +27,7 @@ function ScheduleMeetingModal({ onClose, onSave }: ScheduleModalProps) {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 50,
+        padding: '20px',
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
@@ -68,7 +37,7 @@ function ScheduleMeetingModal({ onClose, onSave }: ScheduleModalProps) {
           borderRadius: '16px',
           border: '1px solid #2A2A2A',
           boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-          width: '460px',
+          width: 'min(460px, 100%)',
           padding: '28px',
         }}
       >
@@ -87,7 +56,7 @@ function ScheduleMeetingModal({ onClose, onSave }: ScheduleModalProps) {
           {[
             { label: 'Client Name', key: 'client', placeholder: 'Enter client name' },
             { label: 'Date', key: 'date', placeholder: 'e.g. Mar 25' },
-            { label: 'Time', key: 'time', placeholder: 'e.g. 2:00 PM – 3:00 PM' },
+            { label: 'Time', key: 'time', placeholder: 'e.g. 2:00 PM - 3:00 PM' },
           ].map((field) => (
             <div key={field.key}>
               <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>
@@ -129,8 +98,8 @@ function ScheduleMeetingModal({ onClose, onSave }: ScheduleModalProps) {
                 outline: 'none',
               }}
             >
-              {['Design Consultation', 'Order Review', 'Initial Consultation', 'Final Approval'].map((t) => (
-                <option key={t} value={t} style={{ backgroundColor: '#1A1A1A' }}>{t}</option>
+              {['Design Consultation', 'Order Review', 'Initial Consultation', 'Final Approval', 'CAD Review', 'Material Selection'].map((type) => (
+                <option key={type} value={type} style={{ backgroundColor: '#1A1A1A' }}>{type}</option>
               ))}
             </select>
           </div>
@@ -175,20 +144,35 @@ function ScheduleMeetingModal({ onClose, onSave }: ScheduleModalProps) {
 
 export function MeetingSchedule({ onNavigate }: MeetingScheduleProps) {
   const [meetingList, setMeetingList] = useState(meetings);
+  const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(meetingList.length / meetingsPerPage));
+  const pageStart = (currentPage - 1) * meetingsPerPage;
+  const paginatedMeetings = meetingList.slice(pageStart, pageStart + meetingsPerPage);
+  const visibleStart = meetingList.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd = Math.min(pageStart + meetingsPerPage, meetingList.length);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+  };
 
   const handleSave = (data: { date: string; time: string; client: string; type: string }) => {
     if (!data.client) return;
-    setMeetingList((prev) => [
-      ...prev,
-      { id: String(prev.length + 1), ...data, confirmed: false },
-    ]);
+    setMeetingList((prev) => {
+      const next = [
+        ...prev,
+        { id: `MT-${1001 + prev.length}`, ...data, confirmed: false },
+      ];
+      setCurrentPage(Math.ceil(next.length / meetingsPerPage));
+      return next;
+    });
   };
 
   return (
     <div>
       {/* Page header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '28px', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ color: '#FFFFFF', fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
             Meeting Schedule
@@ -217,8 +201,15 @@ export function MeetingSchedule({ onNavigate }: MeetingScheduleProps) {
       </div>
 
       {/* Meeting cards */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
-        {meetingList.map((meeting) => (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 320px))',
+          justifyContent: 'start',
+          gap: '16px',
+        }}
+      >
+        {paginatedMeetings.map((meeting) => (
           <div
             key={meeting.id}
             onClick={() => onNavigate('chats')}
@@ -227,9 +218,8 @@ export function MeetingSchedule({ onNavigate }: MeetingScheduleProps) {
               borderRadius: '12px',
               border: '1px solid #2A2A2A',
               padding: '20px',
-              minWidth: '260px',
-              flex: '1',
-              maxWidth: '340px',
+              width: '100%',
+              minHeight: '184px',
               cursor: 'pointer',
               transition: 'border-color 0.15s',
             }}
@@ -240,7 +230,6 @@ export function MeetingSchedule({ onNavigate }: MeetingScheduleProps) {
               (e.currentTarget as HTMLDivElement).style.borderColor = '#2A2A2A';
             }}
           >
-            {/* Date chip */}
             <div
               style={{
                 display: 'inline-flex',
@@ -277,10 +266,95 @@ export function MeetingSchedule({ onNavigate }: MeetingScheduleProps) {
             </div>
 
             <div style={{ color: '#555555', fontSize: '12px', marginTop: '12px' }}>
-              Click to view in inbox →
+              Click to view in inbox
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination */}
+      <div
+        style={{
+          marginTop: '22px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ color: '#888888', fontSize: '13px' }}>
+          Showing <span style={{ color: '#FFFFFF' }}>{visibleStart}</span> to{' '}
+          <span style={{ color: '#FFFFFF' }}>{visibleEnd}</span> of{' '}
+          <span style={{ color: '#FFFFFF' }}>{meetingList.length}</span> meetings
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            aria-label="Previous meetings page"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              border: '1px solid #2A2A2A',
+              backgroundColor: currentPage === 1 ? '#181818' : '#1E1E1E',
+              color: currentPage === 1 ? '#555555' : '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => {
+            const isActive = page === currentPage;
+            return (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                aria-current={isActive ? 'page' : undefined}
+                style={{
+                  minWidth: '36px',
+                  height: '36px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  border: isActive ? 'none' : '1px solid #2A2A2A',
+                  backgroundColor: isActive ? '#D4A84B' : '#1E1E1E',
+                  color: isActive ? '#000000' : '#888888',
+                  fontSize: '14px',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            aria-label="Next meetings page"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              border: '1px solid #2A2A2A',
+              backgroundColor: currentPage === totalPages ? '#181818' : '#1E1E1E',
+              color: currentPage === totalPages ? '#555555' : '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
       {showModal && (
