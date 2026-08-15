@@ -1,15 +1,8 @@
 import { useState } from 'react';
-import { Eye, Search } from 'lucide-react';
+import { Eye, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomerDetailModal } from './CustomerDetailModal';
 import type { ActivePage } from './Sidebar';
-
-const customers = [
-  { id: '1', name: 'Sarah Johnson', email: 'sarah@email.com', phone: '+1 555-001', orders: 3, spent: '$11,500', joined: 'Jan 2024', color: '#D4A84B' },
-  { id: '2', name: 'Michael Chen', email: 'michael@email.com', phone: '+1 555-002', orders: 2, spent: '$7,800', joined: 'Feb 2024', color: '#6C63FF' },
-  { id: '3', name: 'Emma Wilson', email: 'emma@email.com', phone: '+1 555-003', orders: 5, spent: '$18,200', joined: 'Dec 2023', color: '#22C55E' },
-  { id: '4', name: 'James Brown', email: 'james@email.com', phone: '+1 555-004', orders: 1, spent: '$2,100', joined: 'Mar 2024', color: '#3B82F6' },
-  { id: '5', name: 'Lisa Anderson', email: 'lisa@email.com', phone: '+1 555-005', orders: 4, spent: '$9,400', joined: 'Nov 2023', color: '#F97316' },
-];
+import { customers } from '../mock/customers';
 
 function getInitials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -19,15 +12,28 @@ interface CustomersProps {
   onNavigate?: (page: ActivePage) => void;
 }
 
+const itemsPerPage = 8;
+
 export function Customers({ onNavigate }: CustomersProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<typeof customers[0] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = customers.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const pageStart = (currentPage - 1) * itemsPerPage;
+  const paginatedCustomers = filtered.slice(pageStart, pageStart + itemsPerPage);
+  const visibleStart = filtered.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd = Math.min(pageStart + itemsPerPage, filtered.length);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+  };
 
   return (
     <div>
@@ -52,7 +58,10 @@ export function Customers({ onNavigate }: CustomersProps) {
             <Search size={14} color="#888888" />
             <input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Search customers..."
               style={{
                 background: 'transparent',
@@ -113,7 +122,7 @@ export function Customers({ onNavigate }: CustomersProps) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((customer) => (
+              {paginatedCustomers.map((customer) => (
                 <tr key={customer.id}>
                   <td style={{ padding: '0 16px', height: '60px', borderBottom: '1px solid #2A2A2A' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -173,8 +182,92 @@ export function Customers({ onNavigate }: CustomersProps) {
                   </td>
                 </tr>
               ))}
+              {paginatedCustomers.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ height: '72px', color: '#888888', fontSize: '14px', textAlign: 'center', borderBottom: '1px solid #2A2A2A' }}>
+                    No customers found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+        </div>
+        
+        {/* Pagination */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: '20px',
+            paddingTop: '16px',
+            borderTop: '1px solid #2A2A2A',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
+          <span style={{ color: '#888888', fontSize: '13px' }}>
+            Showing <span style={{ color: '#FFFFFF' }}>{visibleStart}</span> to{' '}
+            <span style={{ color: '#FFFFFF' }}>{visibleEnd}</span> of{' '}
+            <span style={{ color: '#FFFFFF' }}>{filtered.length}</span> customers
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                border: '1px solid #2A2A2A',
+                backgroundColor: currentPage === 1 ? '#181818' : 'transparent',
+                color: currentPage === 1 ? '#555555' : '#888888',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronLeft size={14} />
+            </button>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => goToPage(p)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '6px',
+                  border: currentPage === p ? 'none' : '1px solid #2A2A2A',
+                  backgroundColor: currentPage === p ? '#D4A84B' : 'transparent',
+                  color: currentPage === p ? '#000000' : '#888888',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: currentPage === p ? '700' : '400',
+                }}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                border: '1px solid #2A2A2A',
+                backgroundColor: currentPage === totalPages ? '#181818' : 'transparent',
+                color: currentPage === totalPages ? '#555555' : '#888888',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
