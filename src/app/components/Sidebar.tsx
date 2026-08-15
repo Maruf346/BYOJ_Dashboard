@@ -1,4 +1,5 @@
-import { LayoutDashboard, PenTool, MessageCircle, Calendar, Gem, ShoppingBag, Truck, Users, Settings, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { LayoutDashboard, PenTool, MessageCircle, Calendar, Gem, ShoppingBag, Truck, Users, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export type ActivePage =
   | 'dashboard'
@@ -30,10 +31,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div
       style={{
-        width: '240px',
+        width: isCollapsed ? '80px' : '240px',
         minHeight: '100vh',
         backgroundColor: '#161616',
         borderRight: '1px solid #2A2A2A',
@@ -44,13 +47,37 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
         position: 'sticky',
         top: 0,
         height: '100vh',
+        transition: 'width 0.3s ease',
+        overflowX: 'hidden'
       }}
     >
-      {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px', padding: '0 4px' }}>
-        <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-        <span style={{ color: '#FFFFFF', fontWeight: '700', fontSize: '18px' }}>BYOJ</span>
+      {/* Header / Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', marginBottom: '28px', padding: isCollapsed ? '0' : '0 4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0 }} />
+          {!isCollapsed && <span style={{ color: '#FFFFFF', fontWeight: '700', fontSize: '18px', whiteSpace: 'nowrap' }}>BYOJ</span>}
+        </div>
+        {!isCollapsed && (
+          <button 
+            onClick={() => setIsCollapsed(true)}
+            style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title="Collapse Sidebar"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        )}
       </div>
+
+      {/* Expand button when collapsed */}
+      {isCollapsed && (
+        <button 
+          onClick={() => setIsCollapsed(false)}
+          style={{ background: 'transparent', border: 'none', color: '#888', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '28px' }}
+          title="Expand Sidebar"
+        >
+          <ChevronRight size={20} />
+        </button>
+      )}
 
       {/* Nav items */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -61,10 +88,12 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
+              title={isCollapsed ? item.label : undefined}
               style={{
                 width: '100%',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
                 gap: '12px',
                 padding: '10px 12px',
                 borderRadius: '8px',
@@ -90,8 +119,8 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
                 }
               }}
             >
-              <Icon size={18} />
-              <span>{item.label}</span>
+              <Icon size={18} style={{ flexShrink: 0 }} />
+              {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
             </button>
           );
         })}
@@ -100,9 +129,11 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
       {/* Logout */}
       <button
         onClick={onLogout}
+        title={isCollapsed ? "Logout" : undefined}
         style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
           gap: '12px',
           padding: '10px 12px',
           borderRadius: '8px',
@@ -121,8 +152,8 @@ export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
           (e.currentTarget as HTMLButtonElement).style.color = '#888888';
         }}
       >
-        <LogOut size={18} />
-        <span>Logout</span>
+        <LogOut size={18} style={{ flexShrink: 0 }} />
+        {!isCollapsed && <span style={{ whiteSpace: 'nowrap' }}>Logout</span>}
       </button>
     </div>
   );
