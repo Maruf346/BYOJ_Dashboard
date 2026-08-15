@@ -1,63 +1,8 @@
 import { ChangeEvent, useState, useRef, useEffect } from 'react';
-import { Search, Send, Plus, Paperclip, PenLine, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Send, Plus, Paperclip, PenLine, X } from 'lucide-react';
+import { conversations } from '../mock/conversations';
 
-const conversations = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    preview: 'Can you add more diamonds t...',
-    time: '2 min ago',
-    unread: 3,
-    active: true,
-    color: '#D4A84B',
-    messages: [
-      { id: 1, type: 'incoming', text: 'Hi! I wanted to ask about my ring design', time: '10:30 AM' },
-      { id: 2, type: 'outgoing', text: 'Of course! What would you like to change?', time: '10:32 AM' },
-      { id: 3, type: 'incoming', text: 'Can you add more diamonds to the ring?', time: '10:35 AM' },
-      { id: 4, type: 'incoming', text: 'Also make it a bit smaller', time: '10:35 AM' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    preview: 'Perfect! I love the design',
-    time: '1 hour ago',
-    unread: 0,
-    active: false,
-    color: '#6C63FF',
-    messages: [
-      { id: 1, type: 'incoming', text: 'How is my order coming along?', time: '9:00 AM' },
-      { id: 2, type: 'outgoing', text: 'Great progress! The design is almost ready.', time: '9:15 AM' },
-      { id: 3, type: 'incoming', text: 'Perfect! I love the design', time: '9:20 AM' },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Emma Wilson',
-    preview: 'When can I expect delivery?',
-    time: '3 hours ago',
-    unread: 1,
-    active: false,
-    color: '#22C55E',
-    messages: [
-      { id: 1, type: 'outgoing', text: 'Your order has been shipped!', time: '8:00 AM' },
-      { id: 2, type: 'incoming', text: 'When can I expect delivery?', time: '8:30 AM' },
-    ],
-  },
-  {
-    id: '4',
-    name: 'James Brown',
-    preview: 'Thanks for the update',
-    time: '1 day ago',
-    unread: 0,
-    active: false,
-    color: '#3B82F6',
-    messages: [
-      { id: 1, type: 'outgoing', text: 'Your bracelet and earrings have been shipped.', time: 'Yesterday' },
-      { id: 2, type: 'incoming', text: 'Thanks for the update', time: 'Yesterday' },
-    ],
-  },
-];
+const conversationsPerPage = 5;
 
 function getInitials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -69,6 +14,7 @@ export function Chats() {
   const [inputText, setInputText] = useState('');
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [conversationPage, setConversationPage] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cadInputRef = useRef<HTMLInputElement>(null);
@@ -119,6 +65,15 @@ export function Chats() {
   const filtered = conversations.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const totalConversationPages = Math.max(1, Math.ceil(filtered.length / conversationsPerPage));
+  const conversationStart = (conversationPage - 1) * conversationsPerPage;
+  const paginatedConversations = filtered.slice(conversationStart, conversationStart + conversationsPerPage);
+  const conversationVisibleStart = filtered.length === 0 ? 0 : conversationStart + 1;
+  const conversationVisibleEnd = Math.min(conversationStart + conversationsPerPage, filtered.length);
+
+  const goToConversationPage = (page: number) => {
+    setConversationPage(Math.min(Math.max(page, 1), totalConversationPages));
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 56px - 64px)' }}>
@@ -158,7 +113,10 @@ export function Chats() {
               <Search size={14} color="#888888" />
               <input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setConversationPage(1);
+                }}
                 placeholder="Search..."
                 style={{
                   background: 'transparent',
@@ -173,7 +131,7 @@ export function Chats() {
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {filtered.map((conv) => {
+            {paginatedConversations.map((conv) => {
               const isActive = activeConv.id === conv.id;
               return (
                 <button
@@ -250,6 +208,67 @@ export function Chats() {
                 </button>
               );
             })}
+          </div>
+
+          <div
+            style={{
+              borderTop: '1px solid #2A2A2A',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              flexShrink: 0,
+            }}
+          >
+            <span style={{ color: '#777777', fontSize: '12px', whiteSpace: 'nowrap' }}>
+              {conversationVisibleStart}-{conversationVisibleEnd} of {filtered.length}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={() => goToConversationPage(conversationPage - 1)}
+                disabled={conversationPage === 1}
+                aria-label="Previous conversations page"
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '8px',
+                  border: '1px solid #2A2A2A',
+                  backgroundColor: conversationPage === 1 ? '#181818' : '#252525',
+                  color: conversationPage === 1 ? '#555555' : '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: conversationPage === 1 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <ChevronLeft size={15} />
+              </button>
+
+              <span style={{ color: '#A6A6A6', fontSize: '12px', minWidth: '44px', textAlign: 'center' }}>
+                {conversationPage}/{totalConversationPages}
+              </span>
+
+              <button
+                onClick={() => goToConversationPage(conversationPage + 1)}
+                disabled={conversationPage === totalConversationPages}
+                aria-label="Next conversations page"
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '8px',
+                  border: '1px solid #2A2A2A',
+                  backgroundColor: conversationPage === totalConversationPages ? '#181818' : '#252525',
+                  color: conversationPage === totalConversationPages ? '#555555' : '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: conversationPage === totalConversationPages ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <ChevronRight size={15} />
+              </button>
+            </div>
           </div>
         </div>
 
