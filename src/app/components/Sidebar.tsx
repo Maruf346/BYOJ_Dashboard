@@ -26,9 +26,10 @@ const navItems: { id: ActivePage; label: string; icon: React.ElementType }[] = [
 interface SidebarProps {
   activePage: ActivePage;
   onNavigate: (page: ActivePage) => void;
+  onLogout: () => void;
 }
 
-export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+export function Sidebar({ activePage, onNavigate, onLogout }: SidebarProps) {
   return (
     <div
       style={{
@@ -98,6 +99,7 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
       {/* Logout */}
       <button
+        onClick={onLogout}
         style={{
           display: 'flex',
           alignItems: 'center',
