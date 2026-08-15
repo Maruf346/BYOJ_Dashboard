@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Eye, EyeOff, ChevronDown, ChevronUp, Camera, Trash2, Plus, Edit2, X } from 'lucide-react';
+import { Drawer } from 'vaul';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import { ClassicEditor, Bold, Italic, Essentials, Paragraph } from 'ckeditor5';
+import 'ckeditor5/ckeditor5.css';
 
 const tabs = ['Profile', 'Security', 'FAQ', 'Privacy Policy', 'Terms & Conditions'];
 
-const faqItems = [
+const initialFaqItems = [
   {
     q: 'How do I create a new design request?',
     a: 'Navigate to the Design Requests section from the sidebar, then click the "New Request" button. Fill in the customer details, item type, and specifications. Once submitted, the request will appear in your list for review.',
@@ -26,66 +30,33 @@ const faqItems = [
   },
 ];
 
-const privacySections = [
-  {
-    title: 'Information We Collect',
-    content:
-      'We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes your name, email address, phone number, business information, and any other information you choose to provide.',
-  },
-  {
-    title: 'How We Use Your Information',
-    content:
-      'We use the information we collect to provide, maintain, and improve our services, process transactions, send administrative messages, respond to your comments and questions, and for other business purposes.',
-  },
-  {
-    title: 'Data Security',
-    content:
-      'We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration, and destruction. All data is encrypted in transit and at rest using industry-standard encryption protocols.',
-  },
-  {
-    title: 'Third-Party Services',
-    content:
-      'We may share your information with third-party vendors and service providers that perform services on our behalf, such as payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.',
-  },
-  {
-    title: 'Contact Us',
-    content:
-      'If you have any questions about this Privacy Policy, please contact us at privacy@byoj.com or write to us at BYOJ Jewelry, 123 Fifth Avenue, New York, NY 10001.',
-  },
-];
+const initialPrivacyHtml = `
+<h2>Information We Collect</h2>
+<p>We collect information you provide directly to us, such as when you create an account, use our services, or contact us for support. This includes your name, email address, phone number, business information, and any other information you choose to provide.</p>
+<h2>How We Use Your Information</h2>
+<p>We use the information we collect to provide, maintain, and improve our services, process transactions, send administrative messages, respond to your comments and questions, and for other business purposes.</p>
+<h2>Data Security</h2>
+<p>We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration, and destruction. All data is encrypted in transit and at rest using industry-standard encryption protocols.</p>
+<h2>Third-Party Services</h2>
+<p>We may share your information with third-party vendors and service providers that perform services on our behalf, such as payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.</p>
+<h2>Contact Us</h2>
+<p>If you have any questions about this Privacy Policy, please contact us at privacy@byoj.com or write to us at BYOJ Jewelry, 123 Fifth Avenue, New York, NY 10001.</p>
+`;
 
-const termsSections = [
-  {
-    title: 'Acceptance of Terms',
-    content:
-      'By accessing and using the BYOJ platform, you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service apply to all users of the platform.',
-  },
-  {
-    title: 'Use of Platform',
-    content:
-      'You agree to use the platform only for lawful purposes and in a way that does not infringe the rights of, restrict, or inhibit anyone else\'s use and enjoyment of the platform. Prohibited behavior includes harassing or causing distress to any person and transmitting obscene content.',
-  },
-  {
-    title: 'Payments & Fees',
-    content:
-      'All payments made through the platform are subject to our payment processing terms. Design fees, order deposits, and final payments must be completed according to the agreed schedule. Refunds are subject to our cancellation policy.',
-  },
-  {
-    title: 'Intellectual Property',
-    content:
-      'All designs created through BYOJ remain the intellectual property of the respective designers and customers as agreed upon in each order. Custom designs are confidential and will not be shared with third parties.',
-  },
-  {
-    title: 'Limitation of Liability',
-    content:
-      'BYOJ shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, or goodwill, resulting from your access to or use of our services.',
-  },
-  {
-    title: 'Changes to Terms',
-    content:
-      'We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new Terms of Service on the platform and updating the effective date. Your continued use of the platform after changes constitutes acceptance.',
-  },
-];
+const initialTermsHtml = `
+<h2>Acceptance of Terms</h2>
+<p>By accessing and using the BYOJ platform, you accept and agree to be bound by the terms and provision of this agreement. These Terms of Service apply to all users of the platform.</p>
+<h2>Use of Platform</h2>
+<p>You agree to use the platform only for lawful purposes and in a way that does not infringe the rights of, restrict, or inhibit anyone else's use and enjoyment of the platform. Prohibited behavior includes harassing or causing distress to any person and transmitting obscene content.</p>
+<h2>Payments & Fees</h2>
+<p>All payments made through the platform are subject to our payment processing terms. Design fees, order deposits, and final payments must be completed according to the agreed schedule. Refunds are subject to our cancellation policy.</p>
+<h2>Intellectual Property</h2>
+<p>All designs created through BYOJ remain the intellectual property of the respective designers and customers as agreed upon in each order. Custom designs are confidential and will not be shared with third parties.</p>
+<h2>Limitation of Liability</h2>
+<p>BYOJ shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, or goodwill, resulting from your access to or use of our services.</p>
+<h2>Changes to Terms</h2>
+<p>We reserve the right to modify these terms at any time. We will notify users of any material changes by posting the new Terms of Service on the platform and updating the effective date. Your continued use of the platform after changes constitutes acceptance.</p>
+`;
 
 function PasswordInput({ placeholder }: { placeholder: string }) {
   const [show, setShow] = useState(false);
@@ -156,67 +127,75 @@ function PasswordStrength({ value }: { value: string }) {
   );
 }
 
-function FAQAccordion({ items }: { items: typeof faqItems }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {items.map((item, i) => (
-        <div
-          key={i}
-          style={{
-            backgroundColor: '#252525',
-            borderRadius: '10px',
-            border: '1px solid #2A2A2A',
-            overflow: 'hidden',
-          }}
-        >
-          <button
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            style={{
-              width: '100%',
-              padding: '16px 20px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px',
-            }}
-          >
-            <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '600', textAlign: 'left' }}>{item.q}</span>
-            {openIndex === i ? <ChevronUp size={16} color="#888888" /> : <ChevronDown size={16} color="#888888" />}
-          </button>
-          {openIndex === i && (
-            <div style={{ padding: '0 20px 16px', color: '#CCCCCC', fontSize: '14px', lineHeight: '1.6' }}>
-              {item.a}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LongFormContent({ sections, subtitle }: { sections: typeof privacySections; subtitle: string }) {
-  return (
-    <div style={{ color: '#888888', fontSize: '13px', marginBottom: '20px' }}>{subtitle}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
-        {sections.map((s, i) => (
-          <div key={i}>
-            <div style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>{s.title}</div>
-            <p style={{ color: '#CCCCCC', fontSize: '14px', lineHeight: '1.7', margin: 0 }}>{s.content}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function Settings() {
   const [activeTab, setActiveTab] = useState('Profile');
+  
+  // Profile State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profile, setProfile] = useState({ firstName: 'John', lastName: 'Doe', email: 'john@example.com', phone: '+1 (555) 123-4567' });
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  
+  // Security State
   const [passwordValue, setPasswordValue] = useState('');
+
+  // FAQ State
+  const [faqs, setFaqs] = useState(initialFaqItems);
+  const [isAddingFaq, setIsAddingFaq] = useState(false);
+  const [newFaqQ, setNewFaqQ] = useState('');
+  const [newFaqA, setNewFaqA] = useState('');
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  // Policies State
+  const [privacyHtml, setPrivacyHtml] = useState(initialPrivacyHtml);
+  const [termsHtml, setTermsHtml] = useState(initialTermsHtml);
+  
+  // Drawer State for CKEditor
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerType, setDrawerType] = useState<'privacy' | 'terms'>('privacy');
+  const [editingHtml, setEditingHtml] = useState('');
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfilePic(event.target?.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    setIsEditingProfile(false);
+  };
+
+  const handleDeleteFaq = (index: number) => {
+    setFaqs(faqs.filter((_, i) => i !== index));
+    if (openFaqIndex === index) setOpenFaqIndex(null);
+  };
+
+  const handleAddFaq = () => {
+    if (newFaqQ.trim() && newFaqA.trim()) {
+      setFaqs([...faqs, { q: newFaqQ, a: newFaqA }]);
+      setNewFaqQ('');
+      setNewFaqA('');
+      setIsAddingFaq(false);
+    }
+  };
+
+  const openEditorDrawer = (type: 'privacy' | 'terms') => {
+    setDrawerType(type);
+    setEditingHtml(type === 'privacy' ? privacyHtml : termsHtml);
+    setIsDrawerOpen(true);
+  };
+
+  const saveEditorDrawer = () => {
+    if (drawerType === 'privacy') {
+      setPrivacyHtml(editingHtml);
+    } else {
+      setTermsHtml(editingHtml);
+    }
+    setIsDrawerOpen(false);
+  };
 
   const inputStyle = {
     width: '100%',
@@ -272,42 +251,128 @@ export function Settings() {
             padding: '28px',
           }}
         >
-          <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Profile Information</h2>
-          <p style={{ color: '#888888', fontSize: '14px', marginBottom: '24px' }}>Update your personal details</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Profile Information</h2>
+              <p style={{ color: '#888888', fontSize: '14px' }}>Update your personal details</p>
+            </div>
+            {!isEditingProfile && (
+              <button
+                onClick={() => setIsEditingProfile(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }}
+              >
+                <Edit2 size={16} /> Edit Profile
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+            <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#2A2A2A', overflow: 'hidden', border: '2px solid #D4A84B' }}>
+              {profilePic ? (
+                <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888888', fontSize: '24px', fontWeight: 'bold' }}>
+                  {profile.firstName[0]}{profile.lastName[0]}
+                </span>
+              )}
+              {isEditingProfile && (
+                <label style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <Camera size={24} color="#FFFFFF" />
+                  <input type="file" accept="image/*" onChange={handleProfilePicChange} style={{ display: 'none' }} />
+                </label>
+              )}
+            </div>
+            {isEditingProfile && (
+              <div style={{ color: '#888888', fontSize: '13px' }}>
+                Click the avatar to upload a new profile picture.
+              </div>
+            )}
+          </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
             <div>
               <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>First Name</label>
-              <input value={profile.firstName} onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))} style={inputStyle} />
+              <input 
+                value={profile.firstName} 
+                onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))} 
+                style={{ ...inputStyle, opacity: isEditingProfile ? 1 : 0.6 }} 
+                disabled={!isEditingProfile} 
+              />
             </div>
             <div>
               <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>Last Name</label>
-              <input value={profile.lastName} onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))} style={inputStyle} />
+              <input 
+                value={profile.lastName} 
+                onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))} 
+                style={{ ...inputStyle, opacity: isEditingProfile ? 1 : 0.6 }} 
+                disabled={!isEditingProfile} 
+              />
             </div>
           </div>
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>Email</label>
-            <input value={profile.email} onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} style={inputStyle} />
+            <input 
+              value={profile.email} 
+              onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))} 
+              style={{ ...inputStyle, opacity: isEditingProfile ? 1 : 0.6 }} 
+              disabled={!isEditingProfile} 
+            />
           </div>
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '32px' }}>
             <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>Phone</label>
-            <input value={profile.phone} onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} style={inputStyle} />
+            <input 
+              value={profile.phone} 
+              onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} 
+              style={{ ...inputStyle, opacity: isEditingProfile ? 1 : 0.6 }} 
+              disabled={!isEditingProfile} 
+            />
           </div>
 
-          <button
-            style={{
-              padding: '12px 28px',
-              backgroundColor: '#D4A84B',
-              border: 'none',
-              borderRadius: '8px',
-              color: '#000000',
-              fontSize: '14px',
-              fontWeight: '700',
-              cursor: 'pointer',
-            }}
-          >
-            Save Changes
-          </button>
+          {isEditingProfile && (
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handleSaveProfile}
+                style={{
+                  padding: '12px 28px',
+                  backgroundColor: '#D4A84B',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#000000',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                }}
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => setIsEditingProfile(false)}
+                style={{
+                  padding: '12px 28px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -375,10 +440,147 @@ export function Settings() {
             padding: '28px',
           }}
         >
-          <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '20px' }}>
-            Frequently Asked Questions
-          </h2>
-          <FAQAccordion items={faqItems} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>
+                Frequently Asked Questions
+              </h2>
+              <p style={{ color: '#888888', fontSize: '14px' }}>Manage FAQ content displayed to users</p>
+            </div>
+            <button
+              onClick={() => setIsAddingFaq(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: '#D4A84B',
+                border: 'none',
+                borderRadius: '8px',
+                color: '#000000',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              <Plus size={16} /> Add FAQ
+            </button>
+          </div>
+
+          {isAddingFaq && (
+            <div style={{ backgroundColor: '#252525', padding: '20px', borderRadius: '12px', border: '1px solid #2A2A2A', marginBottom: '20px' }}>
+              <h3 style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>Add New FAQ</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                <div>
+                  <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>Question</label>
+                  <input 
+                    value={newFaqQ} 
+                    onChange={(e) => setNewFaqQ(e.target.value)} 
+                    style={inputStyle} 
+                    placeholder="Enter the question"
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', color: '#888888', fontSize: '12px', marginBottom: '6px' }}>Answer</label>
+                  <textarea 
+                    value={newFaqA} 
+                    onChange={(e) => setNewFaqA(e.target.value)} 
+                    style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} 
+                    placeholder="Enter the answer"
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={handleAddFaq}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: '#D4A84B',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#000000',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Save FAQ
+                </button>
+                <button
+                  onClick={() => setIsAddingFaq(false)}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #2A2A2A',
+                    borderRadius: '8px',
+                    color: '#FFFFFF',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {faqs.map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  backgroundColor: '#252525',
+                  borderRadius: '10px',
+                  border: '1px solid #2A2A2A',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '16px 20px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+                >
+                  <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '600', textAlign: 'left', flex: 1 }}>{item.q}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFaq(i);
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#EF4444',
+                        display: 'flex',
+                        padding: '4px',
+                      }}
+                      title="Delete FAQ"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    {openFaqIndex === i ? <ChevronUp size={16} color="#888888" /> : <ChevronDown size={16} color="#888888" />}
+                  </div>
+                </div>
+                {openFaqIndex === i && (
+                  <div style={{ padding: '0 20px 16px', color: '#CCCCCC', fontSize: '14px', lineHeight: '1.6' }}>
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            ))}
+            {faqs.length === 0 && (
+              <div style={{ color: '#888888', fontSize: '14px', textAlign: 'center', padding: '24px' }}>
+                No FAQs available. Click "Add FAQ" to create one.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -389,12 +591,35 @@ export function Settings() {
             borderRadius: '12px',
             border: '1px solid #2A2A2A',
             padding: '28px',
-            maxHeight: '600px',
-            overflowY: 'auto',
           }}
         >
-          <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Privacy Policy</h2>
-          <LongFormContent sections={privacySections} subtitle="Last updated: March 2024" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Privacy Policy</h2>
+              <p style={{ color: '#888888', fontSize: '14px' }}>Last updated: March 2024</p>
+            </div>
+            <button
+              onClick={() => openEditorDrawer('privacy')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: 'transparent',
+                border: '1px solid #2A2A2A',
+                borderRadius: '8px',
+                color: '#FFFFFF',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              <Edit2 size={16} /> Edit Content
+            </button>
+          </div>
+          <div 
+            style={{ color: '#CCCCCC', fontSize: '14px', lineHeight: '1.7', display: 'flex', flexDirection: 'column', gap: '16px' }}
+            dangerouslySetInnerHTML={{ __html: privacyHtml }}
+          />
         </div>
       )}
 
@@ -405,14 +630,134 @@ export function Settings() {
             borderRadius: '12px',
             border: '1px solid #2A2A2A',
             padding: '28px',
-            maxHeight: '600px',
-            overflowY: 'auto',
           }}
         >
-          <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Terms & Conditions</h2>
-          <LongFormContent sections={termsSections} subtitle="Effective date: January 2024" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>Terms & Conditions</h2>
+              <p style={{ color: '#888888', fontSize: '14px' }}>Effective date: January 2024</p>
+            </div>
+            <button
+              onClick={() => openEditorDrawer('terms')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                backgroundColor: 'transparent',
+                border: '1px solid #2A2A2A',
+                borderRadius: '8px',
+                color: '#FFFFFF',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              <Edit2 size={16} /> Edit Content
+            </button>
+          </div>
+          <div 
+            style={{ color: '#CCCCCC', fontSize: '14px', lineHeight: '1.7', display: 'flex', flexDirection: 'column', gap: '16px' }}
+            dangerouslySetInnerHTML={{ __html: termsHtml }}
+          />
         </div>
       )}
+
+      {/* Editor Drawer using Vaul */}
+      <Drawer.Root open={isDrawerOpen} onOpenChange={setIsDrawerOpen} direction="right">
+        <Drawer.Portal>
+          <Drawer.Overlay style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 100 }} />
+          <Drawer.Content 
+            style={{ 
+              position: 'fixed', 
+              right: 0, 
+              top: 0, 
+              bottom: 0, 
+              width: '100%', 
+              maxWidth: '800px', 
+              backgroundColor: '#1E1E1E', 
+              zIndex: 101, 
+              display: 'flex', 
+              flexDirection: 'column',
+              boxShadow: '-10px 0 30px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div style={{ padding: '24px', borderBottom: '1px solid #2A2A2A', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Drawer.Title style={{ color: '#FFFFFF', fontSize: '20px', fontWeight: '700' }}>
+                Edit {drawerType === 'privacy' ? 'Privacy Policy' : 'Terms & Conditions'}
+              </Drawer.Title>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: '#888888',
+                  display: 'flex',
+                  padding: '6px',
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+              <style>{`
+                .ck-editor__editable_inline {
+                  min-height: 400px;
+                  color: #000;
+                }
+              `}</style>
+              <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', overflow: 'hidden' }}>
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={{
+                    plugins: [Essentials, Bold, Italic, Paragraph],
+                    toolbar: ['undo', 'redo', '|', 'bold', 'italic']
+                  }}
+                  data={editingHtml}
+                  onChange={(event, editor) => {
+                    setEditingHtml(editor.getData());
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ padding: '24px', borderTop: '1px solid #2A2A2A', display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={saveEditorDrawer} 
+                style={{
+                  padding: '12px 28px',
+                  backgroundColor: '#D4A84B',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#000000',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                }}
+              >
+                Save Changes
+              </button>
+              <button 
+                onClick={() => setIsDrawerOpen(false)} 
+                style={{
+                  padding: '12px 28px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #2A2A2A',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   );
 }
