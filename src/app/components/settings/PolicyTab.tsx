@@ -3,16 +3,23 @@ import { Edit2, Check, X } from 'lucide-react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {
   ClassicEditor,
+  Essentials,
+  Paragraph,
   Bold,
   Italic,
   Underline,
-  Essentials,
-  Paragraph,
+  Strikethrough,
   Heading,
-  List,
   Link,
+  List,
   BlockQuote,
+  Indent,
+  Alignment,
+  Table,
+  HorizontalLine,
+  Code,
   Undo,
+  Font,
 } from 'ckeditor5';
 import 'ckeditor5/ckeditor5.css';
 
@@ -53,7 +60,12 @@ export function PolicyTab({ title, subtitle, initialHtml }: PolicyTabProps) {
         {!isEditing ? (
           <button
             onClick={handleEdit}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'transparent', border: '1px solid #2A2A2A', borderRadius: '8px', color: '#FFFFFF', cursor: 'pointer', fontSize: '14px' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '8px 16px', backgroundColor: 'transparent',
+              border: '1px solid #2A2A2A', borderRadius: '8px',
+              color: '#FFFFFF', cursor: 'pointer', fontSize: '14px',
+            }}
           >
             <Edit2 size={16} /> Edit Content
           </button>
@@ -61,13 +73,23 @@ export function PolicyTab({ title, subtitle, initialHtml }: PolicyTabProps) {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={handleSave}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 20px', backgroundColor: '#D4A84B', border: 'none', borderRadius: '8px', color: '#000000', cursor: 'pointer', fontSize: '14px', fontWeight: '700' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '8px 20px', backgroundColor: '#D4A84B',
+                border: 'none', borderRadius: '8px', color: '#000000',
+                cursor: 'pointer', fontSize: '14px', fontWeight: '700',
+              }}
             >
               <Check size={16} /> Save
             </button>
             <button
               onClick={handleCancel}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'transparent', border: '1px solid #2A2A2A', borderRadius: '8px', color: '#FFFFFF', cursor: 'pointer', fontSize: '14px' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '8px 16px', backgroundColor: 'transparent',
+                border: '1px solid #2A2A2A', borderRadius: '8px',
+                color: '#FFFFFF', cursor: 'pointer', fontSize: '14px',
+              }}
             >
               <X size={16} /> Cancel
             </button>
@@ -77,56 +99,55 @@ export function PolicyTab({ title, subtitle, initialHtml }: PolicyTabProps) {
 
       {/* Content area */}
       {isEditing ? (
-        <div>
-          <style>{`
-            .policy-editor .ck.ck-editor__main .ck-editor__editable {
-              min-height: 420px;
-              background: #181818;
-              color: #CCCCCC;
-              border: 1px solid #2A2A2A !important;
-              border-radius: 0 0 8px 8px !important;
-            }
-            .policy-editor .ck.ck-toolbar {
-              background: #252525 !important;
-              border: 1px solid #2A2A2A !important;
-              border-radius: 8px 8px 0 0 !important;
-            }
-            .policy-editor .ck.ck-toolbar .ck-toolbar__items .ck-button {
-              color: #CCCCCC !important;
-            }
-            .policy-editor .ck.ck-toolbar .ck-toolbar__items .ck-button:hover {
-              background: #2A2A2A !important;
-            }
-            .policy-editor .ck.ck-toolbar .ck-toolbar__items .ck-button.ck-on {
-              color: #D4A84B !important;
-              background: rgba(212,168,75,0.1) !important;
-            }
-            .policy-editor .ck.ck-editor__editable:focus {
-              box-shadow: none !important;
-              border-color: #D4A84B !important;
-            }
-            .policy-editor .ck-editor__editable h2 {
-              color: #FFFFFF;
-            }
-            .policy-editor .ck-editor__editable p {
-              color: #CCCCCC;
-            }
-          `}</style>
-          <div className="policy-editor">
-            <CKEditor
-              editor={ClassicEditor}
-              config={{
-                plugins: [Essentials, Paragraph, Bold, Italic, Underline, Heading, List, Link, BlockQuote, Undo],
-                toolbar: {
-                  items: ['heading', '|', 'bold', 'italic', 'underline', '|', 'bulletedList', 'numberedList', '|', 'blockQuote', 'link', '|', 'undo', 'redo'],
-                },
-              }}
-              data={draftHtml}
-              onChange={(_event, editor) => {
-                setDraftHtml(editor.getData());
-              }}
-            />
-          </div>
+        <div style={{ borderRadius: '8px', overflow: 'hidden', border: '1px solid #D4A84B' }}>
+          <CKEditor
+            editor={ClassicEditor}
+            data={draftHtml}
+            onChange={(_event, editor) => {
+              setDraftHtml(editor.getData());
+            }}
+            config={{
+              licenseKey: 'GPL',
+              plugins: [
+                Essentials,
+                Paragraph,
+                Bold,
+                Italic,
+                Underline,
+                Strikethrough,
+                Heading,
+                Link,
+                List,
+                BlockQuote,
+                Indent,
+                Alignment,
+                Table,
+                HorizontalLine,
+                Code,
+                Undo,
+                Font,
+              ],
+              toolbar: {
+                items: [
+                  'undo', 'redo', '|',
+                  'heading', '|',
+                  'bold', 'italic', 'underline', 'strikethrough', '|',
+                  'link', 'bulletedList', 'numberedList', '|',
+                  'alignment', 'indent', 'outdent', '|',
+                  'blockQuote', 'insertTable', 'horizontalLine',
+                ],
+                shouldGroupWhenFull: false,
+              },
+              heading: {
+                options: [
+                  { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                  { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                  { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                  { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+                ],
+              },
+            }}
+          />
         </div>
       ) : (
         <div
