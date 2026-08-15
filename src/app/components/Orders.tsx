@@ -1,15 +1,8 @@
 import { useState } from 'react';
-import { Eye, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Search } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { OrderDetailModal } from './OrderDetailModal';
-
-const orders = [
-  { id: 'ORD-001', customer: 'Sarah Johnson', items: 'Custom Ring + Setting', status: 'Processing', total: '$3,500', date: '2024-03-15' },
-  { id: 'ORD-002', customer: 'Michael Chen', items: 'Wedding Band Pair', status: 'In-production', total: '$2,800', date: '2024-03-14' },
-  { id: 'ORD-003', customer: 'Emma Wilson', items: 'Diamond Necklace', status: 'Completed', total: '$5,200', date: '2024-03-13' },
-  { id: 'ORD-004', customer: 'James Brown', items: 'Bracelet + Earrings', status: 'Shipped', total: '$2,100', date: '2024-03-12' },
-  { id: 'ORD-005', customer: 'Lisa Anderson', items: 'Custom Pendant', status: 'Pending', total: '$1,800', date: '2024-03-11' },
-];
+import { orders } from '../mock/orders';
 
 const statCards = [
   { label: 'Total Orders', value: '245', color: '#FFFFFF' },
@@ -18,8 +11,35 @@ const statCards = [
   { label: 'Revenue', value: '$289K', color: '#D4A84B' },
 ];
 
+const ordersPerPage = 6;
+
 export function Orders() {
   const [selectedOrder, setSelectedOrder] = useState<typeof orders[0] | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredOrders = orders.filter((order) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    return [
+      order.id,
+      order.customer,
+      order.items,
+      order.status,
+      order.total,
+      order.date,
+    ].some((value) => value.toLowerCase().includes(query));
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ordersPerPage));
+  const pageStart = (currentPage - 1) * ordersPerPage;
+  const paginatedOrders = filteredOrders.slice(pageStart, pageStart + ordersPerPage);
+  const visibleStart = filteredOrders.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd = Math.min(pageStart + ordersPerPage, filteredOrders.length);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+  };
 
   return (
     <div>
@@ -76,7 +96,39 @@ export function Orders() {
           padding: '24px',
         }}
       >
-        <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '600', marginBottom: '20px' }}>Recent Orders</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+          <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '600', margin: 0 }}>Recent Orders</h2>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: '#1A1A1A',
+              border: '1px solid #2A2A2A',
+              borderRadius: '8px',
+              padding: '9px 12px',
+              width: 'min(100%, 320px)',
+            }}
+          >
+            <Search size={15} color="#888888" />
+            <input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search orders..."
+              style={{
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: '#FFFFFF',
+                fontSize: '14px',
+                width: '100%',
+              }}
+            />
+          </div>
+        </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -102,7 +154,7 @@ export function Orders() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {paginatedOrders.map((order) => (
                 <tr key={order.id}>
                   <td style={{ padding: '0 16px', height: '60px', color: '#D4A84B', fontSize: '14px', fontWeight: '600', borderBottom: '1px solid #2A2A2A' }}>
                     {order.id}
@@ -143,8 +195,99 @@ export function Orders() {
                   </td>
                 </tr>
               ))}
+              {paginatedOrders.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ height: '72px', color: '#888888', fontSize: '14px', textAlign: 'center', borderBottom: '1px solid #2A2A2A' }}>
+                    No orders found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+        </div>
+
+        <div
+          style={{
+            marginTop: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ color: '#888888', fontSize: '13px' }}>
+            Showing <span style={{ color: '#FFFFFF' }}>{visibleStart}</span> to{' '}
+            <span style={{ color: '#FFFFFF' }}>{visibleEnd}</span> of{' '}
+            <span style={{ color: '#FFFFFF' }}>{filteredOrders.length}</span> orders
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              aria-label="Previous orders page"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                border: '1px solid #2A2A2A',
+                backgroundColor: currentPage === 1 ? '#181818' : '#1E1E1E',
+                color: currentPage === 1 ? '#555555' : '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => {
+              const isActive = page === currentPage;
+              return (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  aria-current={isActive ? 'page' : undefined}
+                  style={{
+                    minWidth: '36px',
+                    height: '36px',
+                    padding: '0 12px',
+                    borderRadius: '8px',
+                    border: isActive ? 'none' : '1px solid #2A2A2A',
+                    backgroundColor: isActive ? '#D4A84B' : '#1E1E1E',
+                    color: isActive ? '#000000' : '#888888',
+                    fontSize: '14px',
+                    fontWeight: isActive ? '700' : '500',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {page}
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              aria-label="Next orders page"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                border: '1px solid #2A2A2A',
+                backgroundColor: currentPage === totalPages ? '#181818' : '#1E1E1E',
+                color: currentPage === totalPages ? '#555555' : '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
