@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { ChangeEvent, useState, useRef, useEffect } from 'react';
 import { Search, Send, Plus, Paperclip, PenLine, X } from 'lucide-react';
 
 const conversations = [
@@ -70,6 +70,8 @@ export function Chats() {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cadInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -87,6 +89,31 @@ export function Chats() {
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setMessages((prev) => [...prev, { id: prev.length + 1, type: 'outgoing', text: inputText, time }]);
     setInputText('');
+  };
+
+  const addMockAttachmentMessage = (file: File, kind: 'attachment' | 'cad') => {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const label = kind === 'cad' ? 'CAD design sent' : 'Attachment sent';
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        type: 'outgoing',
+        text: `${label}: ${file.name}`,
+        time,
+      },
+    ]);
+  };
+
+  const handleMockFileUpload = (event: ChangeEvent<HTMLInputElement>, kind: 'attachment' | 'cad') => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    addMockAttachmentMessage(file, kind);
+    setShowPlusMenu(false);
+    event.target.value = '';
   };
 
   const filtered = conversations.filter((c) =>
@@ -316,6 +343,20 @@ export function Chats() {
               position: 'relative',
             }}
           >
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={(event) => handleMockFileUpload(event, 'attachment')}
+              style={{ display: 'none' }}
+            />
+            <input
+              ref={cadInputRef}
+              type="file"
+              accept=".3dm,.3ds,.blend,.cad,.dwg,.dxf,.fbx,.iges,.igs,.obj,.sat,.skp,.step,.stl,.stp"
+              onChange={(event) => handleMockFileUpload(event, 'cad')}
+              style={{ display: 'none' }}
+            />
+
             {/* Plus popup */}
             {showPlusMenu && (
               <div
@@ -340,7 +381,14 @@ export function Chats() {
                   return (
                     <button
                       key={item.label}
-                      onClick={() => setShowPlusMenu(false)}
+                      onClick={() => {
+                        if (item.label === 'Attach File') {
+                          fileInputRef.current?.click();
+                          return;
+                        }
+
+                        cadInputRef.current?.click();
+                      }}
                       style={{
                         width: '100%',
                         padding: '14px 16px',
