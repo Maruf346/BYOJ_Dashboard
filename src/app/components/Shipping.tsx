@@ -1,15 +1,9 @@
 import { useState } from 'react';
-import { Eye, Plus, Download, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, Plus, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { ShippingDetailModal } from './ShippingDetailModal';
-
-const shipments = [
-  { id: 'SHIP-001', order: 'ORD-001', customer: 'Alice Johnson', tracking: 'TRK98231', status: 'In-transit', delivery: 'Oct 24, 2023', color: '#6C63FF' },
-  { id: 'SHIP-002', order: 'ORD-005', customer: 'Bob Smith', tracking: 'TRK21904', status: 'Delivered', delivery: 'Oct 20, 2023', color: '#22C55E' },
-  { id: 'SHIP-003', order: 'ORD-012', customer: 'Charlie Brown', tracking: 'TRK55120', status: 'Ready', delivery: 'Oct 26, 2023', color: '#F97316' },
-  { id: 'SHIP-004', order: 'ORD-015', customer: 'Diana Prince', tracking: 'TRK88231', status: 'In-transit', delivery: 'Oct 25, 2023', color: '#3B82F6' },
-  { id: 'SHIP-005', order: 'ORD-022', customer: 'Ethan Wright', tracking: 'TRK10042', status: 'Ready', delivery: 'Oct 28, 2023', color: '#D4A84B' },
-];
+import { NewShipmentModal } from './NewShipmentModal';
+import { shipments } from '../mock/shipments';
 
 const statCards = [
   { label: 'Total Shipments', value: '1,284', sub: '+12% this month', subColor: '#22C55E' },
@@ -22,9 +16,36 @@ function getInitials(name: string) {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+const itemsPerPage = 5;
+
 export function Shipping() {
   const [selectedShipment, setSelectedShipment] = useState<typeof shipments[0] | null>(null);
-  const [currentPage] = useState(1);
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredShipments = shipments.filter((ship) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    return [
+      ship.id,
+      ship.order,
+      ship.customer,
+      ship.tracking,
+      ship.status,
+    ].some((value) => value.toLowerCase().includes(query));
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredShipments.length / itemsPerPage));
+  const pageStart = (currentPage - 1) * itemsPerPage;
+  const paginatedShipments = filteredShipments.slice(pageStart, pageStart + itemsPerPage);
+  const visibleStart = filteredShipments.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd = Math.min(pageStart + itemsPerPage, filteredShipments.length);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+  };
 
   return (
     <div>
@@ -35,6 +56,7 @@ export function Shipping() {
           <p style={{ color: '#888888', fontSize: '14px' }}>Track and manage your jewelry shipments worldwide.</p>
         </div>
         <button
+          onClick={() => setIsNewModalOpen(true)}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -82,28 +104,42 @@ export function Shipping() {
           padding: '24px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
           <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: '600' }}>Active Shipments</h2>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div
               style={{
-                padding: '8px 16px',
-                backgroundColor: 'transparent',
-                border: '1px solid #2A2A2A',
-                borderRadius: '8px',
-                color: '#FFFFFF',
-                fontSize: '13px',
-                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '8px',
+                backgroundColor: '#1A1A1A',
+                border: '1px solid #2A2A2A',
+                borderRadius: '8px',
+                padding: '9px 12px',
+                width: '260px',
               }}
             >
-              <Download size={14} /> Export CSV
-            </button>
-            <button
+              <Search size={15} color="#888888" />
+              <input
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search shipments..."
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  width: '100%',
+                }}
+              />
+            </div>
+            {/* <button
               style={{
-                padding: '8px 16px',
+                padding: '9px 16px',
                 backgroundColor: 'transparent',
                 border: '1px solid #2A2A2A',
                 borderRadius: '8px',
@@ -116,7 +152,7 @@ export function Shipping() {
               }}
             >
               <SlidersHorizontal size={14} /> Filters
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -144,7 +180,7 @@ export function Shipping() {
               </tr>
             </thead>
             <tbody>
-              {shipments.map((ship) => (
+              {paginatedShipments.map((ship) => (
                 <tr key={ship.id}>
                   <td style={{ padding: '0 16px', height: '60px', color: '#D4A84B', fontSize: '14px', fontWeight: '600', borderBottom: '1px solid #2A2A2A' }}>
                     {ship.id}
@@ -204,6 +240,13 @@ export function Shipping() {
                   </td>
                 </tr>
               ))}
+              {paginatedShipments.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ height: '72px', color: '#888888', fontSize: '14px', textAlign: 'center', borderBottom: '1px solid #2A2A2A' }}>
+                    No shipments found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -217,19 +260,27 @@ export function Shipping() {
             marginTop: '20px',
             paddingTop: '16px',
             borderTop: '1px solid #2A2A2A',
+            flexWrap: 'wrap',
+            gap: '16px',
           }}
         >
-          <span style={{ color: '#888888', fontSize: '13px' }}>Showing 5 of 42 active shipments</span>
+          <span style={{ color: '#888888', fontSize: '13px' }}>
+            Showing <span style={{ color: '#FFFFFF' }}>{visibleStart}</span> to{' '}
+            <span style={{ color: '#FFFFFF' }}>{visibleEnd}</span> of{' '}
+            <span style={{ color: '#FFFFFF' }}>{filteredShipments.length}</span> active shipments
+          </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
               style={{
                 width: '32px',
                 height: '32px',
                 borderRadius: '6px',
                 border: '1px solid #2A2A2A',
-                backgroundColor: 'transparent',
-                color: '#888888',
-                cursor: 'pointer',
+                backgroundColor: currentPage === 1 ? '#181818' : 'transparent',
+                color: currentPage === 1 ? '#555555' : '#888888',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -237,9 +288,10 @@ export function Shipping() {
             >
               <ChevronLeft size={14} />
             </button>
-            {[1, 2, 3].map((p) => (
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((p) => (
               <button
                 key={p}
+                onClick={() => goToPage(p)}
                 style={{
                   width: '32px',
                   height: '32px',
@@ -256,14 +308,16 @@ export function Shipping() {
               </button>
             ))}
             <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
               style={{
                 width: '32px',
                 height: '32px',
                 borderRadius: '6px',
                 border: '1px solid #2A2A2A',
-                backgroundColor: 'transparent',
-                color: '#888888',
-                cursor: 'pointer',
+                backgroundColor: currentPage === totalPages ? '#181818' : 'transparent',
+                color: currentPage === totalPages ? '#555555' : '#888888',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -277,6 +331,9 @@ export function Shipping() {
 
       {selectedShipment && (
         <ShippingDetailModal shipment={selectedShipment} onClose={() => setSelectedShipment(null)} />
+      )}
+      {isNewModalOpen && (
+        <NewShipmentModal onClose={() => setIsNewModalOpen(false)} />
       )}
     </div>
   );

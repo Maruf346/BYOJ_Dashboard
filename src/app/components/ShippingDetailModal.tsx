@@ -1,5 +1,7 @@
 import { X, Copy, CheckCircle2, Circle } from 'lucide-react';
+import { useState } from 'react';
 import { StatusBadge } from './StatusBadge';
+import { shipmentStatuses } from '../mock/shipments';
 
 interface Shipment {
   id: string;
@@ -37,6 +39,7 @@ const timeline = [
 
 export function ShippingDetailModal({ shipment, onClose }: ShippingDetailModalProps) {
   const avatarColor = avatarColors[shipment.customer] || '#D4A84B';
+  const [currentStatus, setCurrentStatus] = useState(shipment.status);
 
   return (
     <div
@@ -143,7 +146,24 @@ export function ShippingDetailModal({ shipment, onClose }: ShippingDetailModalPr
           </div>
           <div>
             <div style={{ color: '#888888', fontSize: '12px', marginBottom: '4px' }}>Current Status</div>
-            <StatusBadge status={shipment.status} />
+            <select
+              value={currentStatus}
+              onChange={(e) => setCurrentStatus(e.target.value)}
+              style={{
+                backgroundColor: '#1A1A1A',
+                border: '1px solid #2A2A2A',
+                borderRadius: '6px',
+                color: '#FFFFFF',
+                padding: '4px 8px',
+                fontSize: '13px',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {shipmentStatuses.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
           <div>
             <div style={{ color: '#888888', fontSize: '12px', marginBottom: '4px' }}>Estimated Delivery</div>

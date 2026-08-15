@@ -11,7 +11,7 @@ const statCards = [
   { label: 'Revenue', value: '$289K', color: '#D4A84B' },
 ];
 
-const ordersPerPage = 6;
+const ordersPerPage = 5;
 
 export function Orders() {
   const [selectedOrder, setSelectedOrder] = useState<typeof orders[0] | null>(null);
