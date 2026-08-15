@@ -1,17 +1,12 @@
-import { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { DesignRequestModal } from './DesignRequestModal';
 import type { ActivePage } from './Sidebar';
-
-const allRequests = [
-  { id: '1', title: 'Custom Ring', customer: 'Sarah Johnson', timeAgo: '2 hours ago', status: 'Pending' },
-  { id: '2', title: 'Custom Necklace', customer: 'Michael Chen', timeAgo: '1 day ago', status: 'In-progress' },
-  { id: '3', title: 'Custom Ring', customer: 'Emma Wilson', timeAgo: '3 days ago', status: 'Completed' },
-  { id: '4', title: 'Custom Necklace', customer: 'James Brown', timeAgo: '5 hours ago', status: 'Pending' },
-];
+import { designRequests } from '../mock/designRequests';
 
 const tabs = ['All', 'Pending', 'In Progress', 'Completed'];
+const itemsPerPage = 6;
 
 interface DesignRequestsProps {
   onNavigate?: (page: ActivePage) => void;
@@ -19,15 +14,37 @@ interface DesignRequestsProps {
 
 export function DesignRequests({ onNavigate }: DesignRequestsProps) {
   const [activeTab, setActiveTab] = useState('All');
-  const [selectedRequest, setSelectedRequest] = useState<typeof allRequests[0] | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRequest, setSelectedRequest] = useState<typeof designRequests[0] | null>(null);
 
-  const filtered = allRequests.filter((r) => {
+  const filtered = designRequests.filter((r) => {
     if (activeTab === 'All') return true;
     if (activeTab === 'Pending') return r.status === 'Pending';
     if (activeTab === 'In Progress') return r.status === 'In-progress';
     if (activeTab === 'Completed') return r.status === 'Completed';
     return true;
   });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const pageStart = (currentPage - 1) * itemsPerPage;
+  const paginatedRequests = filtered.slice(pageStart, pageStart + itemsPerPage);
+  const visibleStart = filtered.length === 0 ? 0 : pageStart + 1;
+  const visibleEnd = Math.min(pageStart + itemsPerPage, filtered.length);
+
+  const tabCounts = useMemo(() => ({
+    All: designRequests.length,
+    Pending: designRequests.filter((r) => r.status === 'Pending').length,
+    'In Progress': designRequests.filter((r) => r.status === 'In-progress').length,
+    Completed: designRequests.filter((r) => r.status === 'Completed').length,
+  }), []);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages));
+  };
 
   return (
     <div>
@@ -44,7 +61,7 @@ export function DesignRequests({ onNavigate }: DesignRequestsProps) {
         {tabs.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabChange(tab)}
             style={{
               padding: '8px 20px',
               borderRadius: '8px',
@@ -57,14 +74,14 @@ export function DesignRequests({ onNavigate }: DesignRequestsProps) {
               transition: 'all 0.15s',
             }}
           >
-            {tab}
+            {tab} <span style={{ opacity: activeTab === tab ? 0.75 : 0.6 }}>({tabCounts[tab as keyof typeof tabCounts]})</span>
           </button>
         ))}
       </div>
 
       {/* Request list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {filtered.map((req) => (
+        {paginatedRequests.map((req) => (
           <div
             key={req.id}
             style={{
@@ -113,6 +130,92 @@ export function DesignRequests({ onNavigate }: DesignRequestsProps) {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination */}
+      <div
+        style={{
+          marginTop: '20px',
+          padding: '16px 0 4px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ color: '#888888', fontSize: '13px' }}>
+          Showing <span style={{ color: '#FFFFFF' }}>{visibleStart}</span> to{' '}
+          <span style={{ color: '#FFFFFF' }}>{visibleEnd}</span> of{' '}
+          <span style={{ color: '#FFFFFF' }}>{filtered.length}</span> requests
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            aria-label="Previous page"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              border: '1px solid #2A2A2A',
+              backgroundColor: currentPage === 1 ? '#181818' : '#1E1E1E',
+              color: currentPage === 1 ? '#555555' : '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => {
+            const isActive = page === currentPage;
+            return (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                aria-current={isActive ? 'page' : undefined}
+                style={{
+                  minWidth: '36px',
+                  height: '36px',
+                  padding: '0 12px',
+                  borderRadius: '8px',
+                  border: isActive ? 'none' : '1px solid #2A2A2A',
+                  backgroundColor: isActive ? '#D4A84B' : '#1E1E1E',
+                  color: isActive ? '#000000' : '#888888',
+                  fontSize: '14px',
+                  fontWeight: isActive ? '700' : '500',
+                  cursor: 'pointer',
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            aria-label="Next page"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              border: '1px solid #2A2A2A',
+              backgroundColor: currentPage === totalPages ? '#181818' : '#1E1E1E',
+              color: currentPage === totalPages ? '#555555' : '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
       {selectedRequest && (
