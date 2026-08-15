@@ -1,32 +1,8 @@
 import { useState } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
+import { initialClarityGrades, initialDiamonds, initialMetals, type Diamond, type Metal } from '../mock/materials';
 
-interface Metal {
-  id: string;
-  name: string;
-  carat: string;
-}
-
-interface Diamond {
-  id: string;
-  name: string;
-}
-
-const initialMetals: Metal[] = [
-  { id: '1', name: 'Yellow Gold', carat: '18K' },
-  { id: '2', name: 'White Gold', carat: '14K' },
-  { id: '3', name: 'Rose Gold', carat: '18K' },
-  { id: '4', name: 'Platinum', carat: '950' },
-];
-
-const initialDiamonds: Diamond[] = [
-  { id: '1', name: 'Yellow Diamond' },
-  { id: '2', name: 'White Diamond' },
-  { id: '3', name: 'Pink Diamond' },
-  { id: '4', name: 'Blue Diamond' },
-];
-
-const initialClarityGrades = ['VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2'];
+type AddPanel = 'metals' | 'diamonds' | 'clarity' | null;
 
 export function Materials() {
   const [metals, setMetals] = useState<Metal[]>(initialMetals);
@@ -38,6 +14,7 @@ export function Materials() {
 
   const [clarityGrades, setClarityGrades] = useState<string[]>(initialClarityGrades);
   const [newClarity, setNewClarity] = useState('');
+  const [openAddPanel, setOpenAddPanel] = useState<AddPanel>(null);
 
   const addMetal = () => {
     if (!newMetalName.trim()) return;
@@ -64,6 +41,10 @@ export function Materials() {
 
   const removeClarity = (grade: string) => setClarityGrades((prev) => prev.filter((g) => g !== grade));
 
+  const toggleAddPanel = (panel: AddPanel) => {
+    setOpenAddPanel((current) => current === panel ? null : panel);
+  };
+
   const inputStyle = {
     backgroundColor: '#1A1A1A',
     border: '1px solid #2A2A2A',
@@ -74,163 +55,189 @@ export function Materials() {
     outline: 'none',
   };
 
+  const cardStyle = {
+    backgroundColor: '#1E1E1E',
+    borderRadius: '12px',
+    border: '1px solid #2A2A2A',
+    padding: '24px',
+    minWidth: 0,
+  };
+
+  const addPanelStyle = {
+    marginTop: '16px',
+    paddingTop: '16px',
+    borderTop: '1px solid #2A2A2A',
+  };
+
   return (
-    <div>
+    <>
+      <style>
+        {`
+          @media (max-width: 760px) {
+            .materials-grid {
+              grid-template-columns: 1fr !important;
+            }
+
+            .materials-card-header {
+              align-items: flex-start !important;
+              flex-direction: column !important;
+            }
+
+            .materials-add-row,
+            .materials-metal-row {
+              flex-direction: column !important;
+              align-items: stretch !important;
+            }
+
+            .materials-metal-carat {
+              width: 100% !important;
+              text-align: left !important;
+            }
+
+            .materials-action-button {
+              width: 100% !important;
+              justify-content: center !important;
+            }
+          }
+        `}
+      </style>
+      <div>
       {/* Page header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ color: '#FFFFFF', fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>Materials</h1>
         <p style={{ color: '#888888', fontSize: '14px' }}>Manage your metals and gemstones inventory</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-        {/* LEFT: Metals */}
-        <div>
-          {/* Metals list */}
-          <div
-            style={{
-              backgroundColor: '#1E1E1E',
-              borderRadius: '12px',
-              border: '1px solid #2A2A2A',
-              padding: '24px',
-              marginBottom: '16px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <span style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600' }}>Metals</span>
-              <button
-                onClick={() => {}}
-                style={{
-                  padding: '6px 14px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid #D4A84B',
-                  borderRadius: '8px',
-                  color: '#D4A84B',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Plus size={14} /> Add Metal
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {metals.map((metal) => (
-                <div
-                  key={metal.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    backgroundColor: '#252525',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '600', flex: 1 }}>
-                    {metal.name}
-                  </span>
-                  <input
-                    value={metal.carat}
-                    onChange={(e) => setMetals((prev) => prev.map((m) => m.id === metal.id ? { ...m, carat: e.target.value } : m))}
-                    style={{
-                      ...inputStyle,
-                      width: '70px',
-                      padding: '6px 10px',
-                      textAlign: 'center',
-                    }}
-                  />
-                  <button
-                    onClick={() => removeMetal(metal.id)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#555555',
-                      display: 'flex',
-                      padding: '4px',
-                      transition: 'color 0.15s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = '#EF4444')}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = '#555555')}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Add metal form */}
-          <div
-            style={{
-              backgroundColor: '#1E1E1E',
-              borderRadius: '12px',
-              border: '1px solid #2A2A2A',
-              padding: '20px',
-            }}
-          >
-            <div style={{ color: '#888888', fontSize: '13px', marginBottom: '12px' }}>Add New Metal</div>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-              <input
-                value={newMetalName}
-                onChange={(e) => setNewMetalName(e.target.value)}
-                placeholder="Metal name"
-                style={{ ...inputStyle, flex: 1 }}
-              />
-              <input
-                value={newMetalCarat}
-                onChange={(e) => setNewMetalCarat(e.target.value)}
-                placeholder="Carat"
-                style={{ ...inputStyle, width: '80px' }}
-              />
-            </div>
+      <div className="materials-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px', alignItems: 'start' }}>
+        {/* Metals */}
+        <div style={cardStyle}>
+          <div className="materials-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px' }}>
+            <span style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600' }}>Metals</span>
             <button
-              onClick={addMetal}
+              className="materials-action-button"
+              onClick={() => toggleAddPanel('metals')}
               style={{
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#D4A84B',
-                border: 'none',
+                padding: '6px 14px',
+                backgroundColor: openAddPanel === 'metals' ? '#D4A84B' : 'transparent',
+                border: '1px solid #D4A84B',
                 borderRadius: '8px',
-                color: '#000000',
-                fontSize: '14px',
-                fontWeight: '700',
+                color: openAddPanel === 'metals' ? '#000000' : '#D4A84B',
+                fontSize: '13px',
+                fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
+                gap: '4px',
               }}
             >
-              <Plus size={16} /> Add
+              <Plus size={14} /> Add Metal
             </button>
           </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {metals.map((metal) => (
+              <div
+                className="materials-metal-row"
+                key={metal.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px',
+                  backgroundColor: '#252525',
+                  borderRadius: '8px',
+                }}
+              >
+                <span style={{ color: '#FFFFFF', fontSize: '14px', fontWeight: '600', flex: 1 }}>
+                  {metal.name}
+                </span>
+                <input
+                  className="materials-metal-carat"
+                  value={metal.carat}
+                  onChange={(e) => setMetals((prev) => prev.map((m) => m.id === metal.id ? { ...m, carat: e.target.value } : m))}
+                  style={{
+                    ...inputStyle,
+                    width: '70px',
+                    padding: '6px 10px',
+                    textAlign: 'center',
+                  }}
+                />
+                <button
+                  onClick={() => removeMetal(metal.id)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#555555',
+                    display: 'flex',
+                    padding: '4px',
+                    transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#EF4444')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#555555')}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {openAddPanel === 'metals' && (
+            <div style={addPanelStyle}>
+              <div style={{ color: '#888888', fontSize: '13px', marginBottom: '12px' }}>Add New Metal</div>
+              <div className="materials-add-row" style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <input
+                  value={newMetalName}
+                  onChange={(e) => setNewMetalName(e.target.value)}
+                  placeholder="Metal name"
+                  style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                />
+                <input
+                  value={newMetalCarat}
+                  onChange={(e) => setNewMetalCarat(e.target.value)}
+                  placeholder="Carat"
+                  style={{ ...inputStyle, width: '88px' }}
+                />
+              </div>
+              <button
+                className="materials-action-button"
+                onClick={addMetal}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  backgroundColor: '#D4A84B',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#000000',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Plus size={16} /> Add
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* RIGHT: Diamonds + Clarity */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
           {/* Diamond Categories */}
-          <div
-            style={{
-              backgroundColor: '#1E1E1E',
-              borderRadius: '12px',
-              border: '1px solid #2A2A2A',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={cardStyle}>
+            <div className="materials-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px' }}>
               <span style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600' }}>Diamond Categories</span>
               <button
+                className="materials-action-button"
+                onClick={() => toggleAddPanel('diamonds')}
                 style={{
                   padding: '6px 14px',
-                  backgroundColor: 'transparent',
+                  backgroundColor: openAddPanel === 'diamonds' ? '#D4A84B' : 'transparent',
                   border: '1px solid #D4A84B',
                   borderRadius: '8px',
-                  color: '#D4A84B',
+                  color: openAddPanel === 'diamonds' ? '#000000' : '#D4A84B',
                   fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -243,7 +250,7 @@ export function Materials() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {diamonds.map((d) => (
                 <div
                   key={d.id}
@@ -251,6 +258,7 @@ export function Materials() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    gap: '12px',
                     padding: '12px 16px',
                     backgroundColor: '#252525',
                     borderRadius: '8px',
@@ -277,54 +285,54 @@ export function Materials() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                value={newDiamond}
-                onChange={(e) => setNewDiamond(e.target.value)}
-                placeholder="Diamond Name"
-                style={{ ...inputStyle, flex: 1 }}
-                onKeyDown={(e) => e.key === 'Enter' && addDiamond()}
-              />
-              <button
-                onClick={addDiamond}
-                style={{
-                  padding: '10px 16px',
-                  backgroundColor: '#D4A84B',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#000000',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <Plus size={14} /> Add
-              </button>
-            </div>
+            {openAddPanel === 'diamonds' && (
+              <div style={addPanelStyle}>
+                <div className="materials-add-row" style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    value={newDiamond}
+                    onChange={(e) => setNewDiamond(e.target.value)}
+                    placeholder="Diamond Name"
+                    style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                    onKeyDown={(e) => e.key === 'Enter' && addDiamond()}
+                  />
+                  <button
+                    className="materials-action-button"
+                    onClick={addDiamond}
+                    style={{
+                      padding: '10px 16px',
+                      backgroundColor: '#D4A84B',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#000000',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Clarity Grades */}
-          <div
-            style={{
-              backgroundColor: '#1E1E1E',
-              borderRadius: '12px',
-              border: '1px solid #2A2A2A',
-              padding: '24px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={cardStyle}>
+            <div className="materials-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px' }}>
               <span style={{ color: '#FFFFFF', fontSize: '16px', fontWeight: '600' }}>Clarity Grades</span>
               <button
+                className="materials-action-button"
+                onClick={() => toggleAddPanel('clarity')}
                 style={{
                   padding: '6px 14px',
-                  backgroundColor: 'transparent',
+                  backgroundColor: openAddPanel === 'clarity' ? '#D4A84B' : 'transparent',
                   border: '1px solid #D4A84B',
                   borderRadius: '8px',
-                  color: '#D4A84B',
+                  color: openAddPanel === 'clarity' ? '#000000' : '#D4A84B',
                   fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -337,7 +345,7 @@ export function Materials() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {clarityGrades.map((grade) => (
                 <div
                   key={grade}
@@ -371,37 +379,43 @@ export function Materials() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                value={newClarity}
-                onChange={(e) => setNewClarity(e.target.value)}
-                placeholder="Clarity Grade (e.g. IF, FL)"
-                style={{ ...inputStyle, flex: 1 }}
-                onKeyDown={(e) => e.key === 'Enter' && addClarity()}
-              />
-              <button
-                onClick={addClarity}
-                style={{
-                  padding: '10px 16px',
-                  backgroundColor: '#D4A84B',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#000000',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <Plus size={14} /> Add
-              </button>
-            </div>
+            {openAddPanel === 'clarity' && (
+              <div style={addPanelStyle}>
+                <div className="materials-add-row" style={{ display: 'flex', gap: '10px' }}>
+                  <input
+                    value={newClarity}
+                    onChange={(e) => setNewClarity(e.target.value)}
+                    placeholder="Clarity Grade (e.g. IF, FL)"
+                    style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                    onKeyDown={(e) => e.key === 'Enter' && addClarity()}
+                  />
+                  <button
+                    className="materials-action-button"
+                    onClick={addClarity}
+                    style={{
+                      padding: '10px 16px',
+                      backgroundColor: '#D4A84B',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#000000',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <Plus size={14} /> Add
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
