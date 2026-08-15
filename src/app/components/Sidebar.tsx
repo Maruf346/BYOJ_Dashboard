@@ -47,23 +47,7 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
     >
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px', padding: '0 4px' }}>
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: '#D4A84B',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '700',
-            color: '#000',
-            fontSize: '16px',
-            flexShrink: 0,
-          }}
-        >
-          B
-        </div>
+        <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
         <span style={{ color: '#FFFFFF', fontWeight: '700', fontSize: '18px' }}>BYOJ</span>
       </div>
 
